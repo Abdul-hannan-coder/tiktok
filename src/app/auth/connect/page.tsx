@@ -4,30 +4,99 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Header } from "@/components/Home-Content/Header"
 import { Footer } from "@/components/Home-Content/Footer"
-import { ExternalLink, Loader2, AlertCircle } from "lucide-react"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { ExternalLink, Loader2, AlertCircle, CheckCircle } from "lucide-react"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuthContext } from "@/contexts/AuthContext"
 import { useTikTok } from "@/lib/hooks/tiktok/useTikTok"
 
 export default function ConnectPage() {
   const [isConnecting, setIsConnecting] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const { getToken } = useAuthContext()
   const tiktok = useTikTok({ getToken })
 
+  // Check for error from callback redirect
+  useEffect(() => {
+    const error = searchParams.get('error')
+    if (error) {
+      setErrorMessage(decodeURIComponent(error))
+    }
+  }, [searchParams])
+
   const handleConnectTikTok = async () => {
     setIsConnecting(true)
+    setErrorMessage(null)
     
     try {
       // Create OAuth URL
       const oauthData = await tiktok.actions.createOAuth()
       
-      // Redirect to TikTok OAuth page
       if (oauthData && oauthData.auth_url) {
-        window.location.href = oauthData.auth_url
+        // Open TikTok OAuth in popup
+        const width = 600
+        const height = 700
+        const left = window.screen.width / 2 - width / 2
+        const top = window.screen.height / 2 - height / 2
+        
+        const popup = window.open(
+          oauthData.auth_url,
+          'TikTok OAuth',
+          `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no`
+        )
+
+        // Listen for messages from popup
+        const handleMessage = (event: MessageEvent) => {
+          // Verify origin for security
+          if (event.origin !== window.location.origin) {
+            return
+          }
+
+          if (event.data.type === 'TIKTOK_OAUTH_CALLBACK') {
+            window.removeEventListener('message', handleMessage)
+            
+            if (event.data.success) {
+              // Success - show success message and redirect to dashboard
+              setShowSuccess(true)
+              setIsConnecting(false)
+              
+              setTimeout(() => {
+                router.push('/dashboard')
+              }, 2000)
+            } else {
+              // Error - show error message
+              setErrorMessage(event.data.message || 'Failed to connect TikTok account')
+              setIsConnecting(false)
+            }
+          }
+        }
+
+        window.addEventListener('message', handleMessage)
+
+        // Check if popup was blocked
+        if (!popup || popup.closed) {
+          setErrorMessage('Popup was blocked. Please allow popups for this site.')
+          setIsConnecting(false)
+          window.removeEventListener('message', handleMessage)
+        }
+
+        // Check if popup was closed manually
+        const checkPopupClosed = setInterval(() => {
+          if (popup && popup.closed) {
+            clearInterval(checkPopupClosed)
+            window.removeEventListener('message', handleMessage)
+            if (!showSuccess) {
+              setIsConnecting(false)
+            }
+          }
+        }, 500)
       }
     } catch (error) {
       console.error("Failed to start TikTok OAuth:", error)
+      setErrorMessage('Failed to initiate TikTok connection')
       setIsConnecting(false)
     }
   }
@@ -48,13 +117,26 @@ export default function ConnectPage() {
           <div className="max-w-md mx-auto">
             <Card className="bg-[#1A103D]/30 backdrop-blur-sm border-0 shadow-2xl shadow-[#6C63FF]/50 ring-0">
               <CardContent className="p-12 text-center">
+                {/* Success Alert */}
+                {showSuccess && (
+                  <div className="bg-[#6C63FF]/10 border border-[#6C63FF]/50 rounded-lg p-3 flex items-start space-x-3 mb-6 text-left">
+                    <CheckCircle className="h-5 w-5 text-[#6C63FF] shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-[#6C63FF] text-sm font-medium">Connected Successfully!</p>
+                      <p className="text-[#C5C5D2] text-sm mt-1">Redirecting to dashboard...</p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Error Alert */}
-                {tiktok.state.error && (
+                {(tiktok.state.error || errorMessage) && (
                   <div className="bg-[#FF2E97]/10 border border-[#FF2E97]/50 rounded-lg p-3 flex items-start space-x-3 mb-6 text-left">
-                    <AlertCircle className="h-5 w-5 text-[#FF2E97] flex-shrink-0 mt-0.5" />
+                    <AlertCircle className="h-5 w-5 text-[#FF2E97] shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <p className="text-[#FF2E97] text-sm font-medium">Connection Failed</p>
-                      <p className="text-[#C5C5D2] text-sm mt-1">{tiktok.state.error.message}</p>
+                      <p className="text-[#C5C5D2] text-sm mt-1">
+                        {errorMessage || tiktok.state.error?.message}
+                      </p>
                     </div>
                   </div>
                 )}
