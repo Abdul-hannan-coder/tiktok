@@ -44,30 +44,37 @@ export default function LoginPage() {
       // Show success popup
       setShowSuccessPopup(true)
       
+      // Wait a bit for auth state to update
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
       // Step 2: Check if TikTok is connected
       try {
         const tokenData = await tiktok.actions.checkToken()
+        
+        console.log('TikTok token check result:', tokenData)
         
         // If TikTok is connected, redirect to dashboard
         if (tokenData && tokenData.access_token) {
           setTimeout(() => {
             router.push("/dashboard")
-          }, 2000)
+          }, 1500)
         } else {
           // No TikTok connection, go to connect page
           setTimeout(() => {
             router.push("/auth/connect")
-          }, 2000)
+          }, 1500)
         }
-      } catch {
+      } catch (checkError) {
+        console.log('TikTok check error:', checkError)
         // Error checking TikTok or no connection, go to connect page
         setTimeout(() => {
           router.push("/auth/connect")
-        }, 2000)
+        }, 1500)
       }
     } catch (error) {
       // Login error is already stored in state.error
       console.error("Login failed:", error)
+      setShowSuccessPopup(false)
     }
   }
 

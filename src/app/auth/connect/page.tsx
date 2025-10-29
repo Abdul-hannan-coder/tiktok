@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Header } from "@/components/Home-Content/Header"
 import { Footer } from "@/components/Home-Content/Footer"
-import { ExternalLink, Loader2, AlertCircle, CheckCircle } from "lucide-react"
+import { ExternalLink, Loader2, AlertCircle, CheckCircle, LogOut } from "lucide-react"
 import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAuthContext } from "@/contexts/AuthContext"
@@ -16,7 +16,7 @@ function ConnectContent() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { getToken } = useAuthContext()
+  const { getToken, actions: authActions } = useAuthContext()
   const tiktok = useTikTok({ getToken })
 
   // Check for error from callback redirect
@@ -26,6 +26,11 @@ function ConnectContent() {
       setErrorMessage(decodeURIComponent(error))
     }
   }, [searchParams])
+
+  const handleLogout = () => {
+    authActions.logout()
+    router.push("/")
+  }
 
   const handleConnectTikTok = async () => {
     setIsConnecting(true)
@@ -180,12 +185,24 @@ function ConnectContent() {
                 )}
 
                 {/* Info Text */}
-                <p className="text-[#C5C5D2] text-sm">
+                <p className="text-[#C5C5D2] text-sm mb-6">
                   {isConnecting || tiktok.state.status === 'loading'
                     ? "Please wait while we connect your TikTok account..." 
                     : "Connect your TikTok account to start automating your posts"
                   }
                 </p>
+
+                {/* Logout Button */}
+                <div className="pt-4 border-t border-[#2A1A4D]">
+                  <Button
+                    onClick={handleLogout}
+                    variant="outline"
+                    className="w-full bg-transparent border-[#3A2A5D] text-[#C5C5D2] hover:bg-[#FF2E97]/10 hover:text-[#FF2E97] hover:border-[#FF2E97]/50"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>

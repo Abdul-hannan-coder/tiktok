@@ -2,11 +2,21 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Menu, X } from "lucide-react"
+import { Menu, X, LogOut } from "lucide-react"
+import { useAuthContext } from "@/contexts/AuthContext"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { state: authState, actions: authActions } = useAuthContext()
+  const router = useRouter()
+
+  const handleLogout = () => {
+    authActions.logout()
+    router.push("/")
+    setIsMenuOpen(false)
+  }
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#0A012A] border-b border-[#2A1A4D]">
@@ -49,12 +59,34 @@ export function Header() {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="outline" className="px-4 py-2 text-sm font-medium bg-transparent border-[#3A2A5D] text-[#C5C5D2] hover:bg-[#1A103D] hover:text-white rounded-2xl" asChild>
-              <Link href="/auth/login">Login</Link>
-            </Button>
-            <Button variant="default" className="px-6 py-2 text-sm font-medium bg-gradient-to-r from-[#6C63FF] to-[#FF2E97] hover:from-[#5A52E6] hover:to-[#E61E87] text-white rounded-2xl" asChild>
-              <Link href="/auth/signup">Sign Up</Link>
-            </Button>
+            {authState.isAuthenticated ? (
+              <>
+                <Button 
+                  variant="outline" 
+                  className="px-4 py-2 text-sm font-medium bg-transparent border-[#3A2A5D] text-[#C5C5D2] hover:bg-[#1A103D] hover:text-white rounded-2xl" 
+                  asChild
+                >
+                  <Link href="/dashboard">Dashboard</Link>
+                </Button>
+                <Button 
+                  variant="default" 
+                  className="px-6 py-2 text-sm font-medium bg-gradient-to-r from-[#FF2E97] to-[#6C63FF] hover:from-[#E61E87] hover:to-[#5A52E6] text-white rounded-2xl"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" className="px-4 py-2 text-sm font-medium bg-transparent border-[#3A2A5D] text-[#C5C5D2] hover:bg-[#1A103D] hover:text-white rounded-2xl" asChild>
+                  <Link href="/auth/login">Login</Link>
+                </Button>
+                <Button variant="default" className="px-6 py-2 text-sm font-medium bg-gradient-to-r from-[#6C63FF] to-[#FF2E97] hover:from-[#5A52E6] hover:to-[#E61E87] text-white rounded-2xl" asChild>
+                  <Link href="/auth/signup">Sign Up</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -89,12 +121,34 @@ export function Header() {
                 About Us
               </Link>
               <div className="flex flex-col space-y-4 pt-6 border-t border-[#2A1A4D]">
-                <Button variant="outline" className="px-4 py-2 text-sm font-medium bg-transparent border-[#3A2A5D] text-[#C5C5D2] hover:bg-[#1A103D] hover:text-white rounded-2xl" asChild>
-                  <Link href="/auth/login">Login</Link>
-                </Button>
-                <Button variant="default" className="px-6 py-2 text-sm font-medium bg-gradient-to-r from-[#6C63FF] to-[#FF2E97] hover:from-[#5A52E6] hover:to-[#E61E87] text-white rounded-2xl" asChild>
-                  <Link href="/auth/signup">Sign Up</Link>
-                </Button>
+                {authState.isAuthenticated ? (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      className="px-4 py-2 text-sm font-medium bg-transparent border-[#3A2A5D] text-[#C5C5D2] hover:bg-[#1A103D] hover:text-white rounded-2xl" 
+                      asChild
+                    >
+                      <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>Dashboard</Link>
+                    </Button>
+                    <Button 
+                      variant="default" 
+                      className="px-6 py-2 text-sm font-medium bg-gradient-to-r from-[#FF2E97] to-[#6C63FF] hover:from-[#E61E87] hover:to-[#5A52E6] text-white rounded-2xl"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Logout
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" className="px-4 py-2 text-sm font-medium bg-transparent border-[#3A2A5D] text-[#C5C5D2] hover:bg-[#1A103D] hover:text-white rounded-2xl" asChild>
+                      <Link href="/auth/login">Login</Link>
+                    </Button>
+                    <Button variant="default" className="px-6 py-2 text-sm font-medium bg-gradient-to-r from-[#6C63FF] to-[#FF2E97] hover:from-[#5A52E6] hover:to-[#E61E87] text-white rounded-2xl" asChild>
+                      <Link href="/auth/signup">Sign Up</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </nav>
           </div>
