@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Loader2 } from "lucide-react"
 
-export default function CallbackPage() {
+function CallbackContent() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -49,5 +49,23 @@ export default function CallbackPage() {
         <p className="text-[#C5C5D2]">Please wait while we complete the connection</p>
       </div>
     </div>
+  )
+}
+
+export default function CallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0A012A] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-to-r from-[#6C63FF] to-[#FF2E97] rounded-full flex items-center justify-center mx-auto mb-4">
+            <Loader2 className="h-8 w-8 text-white animate-spin" />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-2">Loading...</h3>
+          <p className="text-[#C5C5D2]">Please wait</p>
+        </div>
+      </div>
+    }>
+      <CallbackContent />
+    </Suspense>
   )
 }
