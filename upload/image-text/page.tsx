@@ -6,22 +6,22 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-// import { Alert, AlertDescription } from "@/components/ui/alert" // Removed
-// import { Progress } from "@/components/ui/progress" // Removed
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Progress } from "@/components/ui/progress"
 import { 
-  // Image, // Removed (unused)
+  Image, 
   FileText, 
   ArrowLeft,
-  // Send, // Removed (unused)
-  // CheckCircle, // Removed
-  // AlertCircle, // Removed
-  // Loader2, // Removed
+  Send,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
   Clock,
-  // Link as LinkIcon // Removed (unused)
+  Link as LinkIcon
 } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react" // Removed useRef
-// import { useTikTokPost } from "@/hooks" // Removed
+import { useState, useRef } from "react"
+import { useTikTokPost } from "@/hooks"
 import { toast } from "sonner"
 
 export default function ImageTextPostPage() {
@@ -31,7 +31,17 @@ export default function ImageTextPostPage() {
     imageUrl: ""
   })
 
-  // --- All useTikTokPost hook logic removed ---
+  const {
+    isLoading,
+    error,
+    uploadProgress,
+    publishId,
+    uploadStatus,
+    lastResponse,
+    uploadPhotoDraft,
+    clearError,
+    resetState
+  } = useTikTokPost()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -40,7 +50,7 @@ export default function ImageTextPostPage() {
     })
   }
 
-  const handleSubmit = (e: React.FormEvent) => { // Removed async
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!formData.imageUrl.trim() || !formData.title.trim() || !formData.description.trim()) {
@@ -56,21 +66,28 @@ export default function ImageTextPostPage() {
       return
     }
 
-    // --- API call logic removed ---
-    // Simulate submission for demonstration
-    const request = {
-      photo_urls: [formData.imageUrl],
-      cover_index: 0,
-      title: formData.title,
-      description: formData.description
-    }
-    console.log("Form Submitted (Simulation):", request)
+    try {
+      const request = {
+        photo_urls: [formData.imageUrl],
+        cover_index: 0,
+        title: formData.title,
+        description: formData.description
+      }
 
-    toast.success("Draft created! (Simulation)")
-    toast.info("This is a demo. No data was sent.")
-    
-    // Reset form
-    setFormData({ title: "", description: "", imageUrl: "" })
+      const response = await uploadPhotoDraft(request)
+
+      if (response.success) {
+        toast.success(response.message)
+          toast.info("Check your TikTok app to complete the post!")
+        // Reset form
+        setFormData({ title: "", description: "", imageUrl: "" })
+      } else {
+        toast.error(response.message)
+      }
+    } catch (error) {
+      console.error('Upload error:', error)
+      toast.error("Failed to upload image. Please try again.")
+    }
   }
 
   return (
@@ -146,8 +163,36 @@ export default function ImageTextPostPage() {
                 )}
               </div>
 
-              {/* --- Upload Progress, Error, and Success displays removed --- */}
-              
+              {/* Upload Progress */}
+              {isLoading && (
+                <div className="mt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-white text-sm">Uploading...</span>
+                    <span className="text-[#C5C5D2] text-sm">{uploadProgress}%</span>
+                  </div>
+                  <Progress value={uploadProgress} className="w-full" />
+                </div>
+              )}
+
+              {/* Error Display */}
+              {error && (
+                <Alert className="mt-4 border-red-500 bg-red-500/10">
+                  <AlertCircle className="h-4 w-4 text-red-500" />
+                  <AlertDescription className="text-red-300">
+                    {error}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* Success Display */}
+              {lastResponse?.success && (
+                <Alert className="mt-4 border-green-500 bg-green-500/10">
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <AlertDescription className="text-green-300">
+                    {lastResponse.message}
+                  </AlertDescription>
+                </Alert>
+              )}
             </CardContent>
           </Card>
 
@@ -217,14 +262,20 @@ export default function ImageTextPostPage() {
                 <div className="flex space-x-4 pt-4">
                   <Button
                     type="submit"
-                    disabled={!formData.imageUrl.trim() || !formData.title.trim() || !formData.description.trim()} // Removed isLoading
+                    disabled={isLoading || !formData.imageUrl.trim() || !formData.title.trim() || !formData.description.trim()}
                     className="flex-1 bg-linear-to-r from-[#6C63FF] to-[#FF2E97] hover:from-[#5A52E6] hover:to-[#E61E87] text-white font-semibold py-3 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#6C63FF]/30"
                   >
-                    {/* Removed loading state */}
-                    <>
-                      <Clock className="h-4 w-4 mr-2" />
-                      Save as Draft
-                    </>
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Creating Draft...
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="h-4 w-4 mr-2" />
+                        Save as Draft
+                      </>
+                    )}
                   </Button>
                 </div>
               </form>
