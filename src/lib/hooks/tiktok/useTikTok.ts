@@ -78,12 +78,15 @@ export function useTikTok(options: TikTokOptions) {
     dispatch({ type: 'RESET' });
   }, []);
 
+  // Memoize actions object to prevent unnecessary re-renders
+  const actions = useMemo(() => ({
+    checkToken,
+    createOAuth,
+  }), [checkToken, createOAuth]);
+
   return {
     state,
-    actions: {
-      checkToken,
-      createOAuth,
-    },
+    actions,
     reset,
   };
 }

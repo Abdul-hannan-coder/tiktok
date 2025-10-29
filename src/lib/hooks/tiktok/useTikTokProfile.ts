@@ -58,11 +58,14 @@ export function useTikTokProfile(options: TikTokProfileOptions) {
     dispatch({ type: 'RESET' });
   }, []);
 
+  // Memoize actions object to prevent unnecessary re-renders
+  const actions = useMemo(() => ({
+    loadProfile,
+  }), [loadProfile]);
+
   return {
     state,
-    actions: {
-      loadProfile,
-    },
+    actions,
     reset,
   };
 }

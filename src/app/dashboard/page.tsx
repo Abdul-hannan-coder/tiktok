@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { DashboardLayout } from "@/components/DashboardLayout"
 import { AuthGuard } from "@/components/AuthGuard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -20,13 +20,16 @@ import { useTikTokProfile } from "@/lib/hooks/tiktok/useTikTokProfile"
 export default function DashboardPage() {
   const { getToken, state: authState } = useAuthContext()
   const { state: profileState, actions } = useTikTokProfile({ getToken })
+  const hasLoadedRef = useRef(false)
 
   useEffect(() => {
-    // Load TikTok profile on mount (from cache)
-    if (authState.isAuthenticated) {
+    // Load TikTok profile on mount (from cache) - only once
+    if (authState.isAuthenticated && !hasLoadedRef.current) {
+      hasLoadedRef.current = true
       actions.loadProfile(false)
     }
-  }, [authState.isAuthenticated, actions])
+  }, [authState.isAuthenticated])
+  // Removed 'actions' from dependencies to prevent infinite loop
 
   const handleRefresh = () => {
     // Refresh from live TikTok API
