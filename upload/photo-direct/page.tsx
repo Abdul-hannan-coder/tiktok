@@ -25,7 +25,6 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
-import { useTikTokPost } from "@/hooks"
 import { toast } from "sonner"
 
 export default function PhotoDirectPostPage() {
@@ -40,17 +39,11 @@ export default function PhotoDirectPostPage() {
     brandOrganicToggle: false
   })
 
-  const {
-    isLoading,
-    error,
-    uploadProgress,
-    publishId,
-    uploadStatus,
-    lastResponse,
-    uploadPhotoDirect,
-    clearError,
-    resetState
-  } = useTikTokPost()
+  // Functionality removed: keep UI only
+  const isLoading = false
+  const error: string | null = null
+  const uploadProgress = 0
+  const lastResponse: any = null
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -73,58 +66,9 @@ export default function PhotoDirectPostPage() {
     })
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!formData.imageUrl.trim() || !formData.title.trim() || !formData.description.trim()) {
-      toast.error("Please enter an image URL, title, and description")
-      return
-    }
-
-    // Basic URL validation
-    try {
-      new URL(formData.imageUrl)
-    } catch {
-      toast.error("Please enter a valid URL")
-      return
-    }
-
-    try {
-      const request = {
-        photo_urls: [formData.imageUrl],
-        cover_index: 0,
-        title: formData.title,
-        description: formData.description,
-        privacy_level: formData.privacyLevel,
-        disable_comment: formData.disableComment,
-        auto_add_music: formData.autoAddMusic,
-        brand_content_toggle: formData.brandContentToggle,
-        brand_organic_toggle: formData.brandOrganicToggle
-      }
-
-      const response = await uploadPhotoDirect(request)
-
-      if (response.success) {
-        toast.success(response.message)
-        toast.info("Your photo has been posted to TikTok!")
-        // Reset form
-        setFormData({ 
-          title: "", 
-          description: "", 
-          imageUrl: "",
-          privacyLevel: "PUBLIC_TO_EVERYONE",
-          disableComment: false,
-          autoAddMusic: false,
-          brandContentToggle: false,
-          brandOrganicToggle: false
-        })
-      } else {
-        toast.error(response.message)
-      }
-    } catch (error) {
-      console.error('Upload error:', error)
-      toast.error("Failed to upload photo. Please try again.")
-    }
+    toast.info("Uploads are disabled in this build")
   }
 
   const privacyOptions = [
@@ -368,7 +312,7 @@ export default function PhotoDirectPostPage() {
                 <div className="flex space-x-4 pt-4">
                   <Button
                     type="submit"
-                    disabled={isLoading || !formData.imageUrl.trim() || !formData.title.trim() || !formData.description.trim()}
+                    disabled
                     className="flex-1 bg-linear-to-r from-[#FF2E97] to-[#6C63FF] hover:from-[#E61E87] hover:to-[#5A52E6] text-white font-semibold py-3 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#FF2E97]/30"
                   >
                     {isLoading ? (

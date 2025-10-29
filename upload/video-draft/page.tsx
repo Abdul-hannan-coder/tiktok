@@ -23,7 +23,6 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useState, useRef } from "react"
-import { useTikTokPost } from "@/hooks"
 import { toast } from "sonner"
 
 export default function VideoDraftPostingPage() {
@@ -36,18 +35,11 @@ export default function VideoDraftPostingPage() {
   const [activeTab, setActiveTab] = useState<'file' | 'url'>('file')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const {
-    isLoading,
-    error,
-    uploadProgress,
-    publishId,
-    uploadStatus,
-    lastResponse,
-    uploadVideoDraft,
-    uploadVideoDraftFromUrl,
-    clearError,
-    resetState
-  } = useTikTokPost()
+  // Functionality removed: keep UI only
+  const isLoading = false
+  const error: string | null = null
+  const uploadProgress = 0
+  const lastResponse: any = null
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -62,7 +54,7 @@ export default function VideoDraftPostingPage() {
       setSelectedFile(file)
       const url = URL.createObjectURL(file)
       setVideoPreview(url)
-      clearError()
+      // error resolve: removed clearError
     }
   }
 
@@ -73,7 +65,7 @@ export default function VideoDraftPostingPage() {
       setSelectedFile(file)
       const url = URL.createObjectURL(file)
       setVideoPreview(url)
-      clearError()
+      // error resolve: removed clearError
     }
   }
 
@@ -81,65 +73,9 @@ export default function VideoDraftPostingPage() {
     e.preventDefault()
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (activeTab === 'file') {
-      if (!selectedFile || !formData.text.trim()) {
-        toast.error("Please select a video file and enter a description")
-        return
-      }
-
-      try {
-        const response = await uploadVideoDraft(selectedFile, formData.text)
-
-        if (response.success) {
-          toast.success(response.message)
-          toast.info("Check your TikTok app to complete the post!")
-          // Reset form
-          setFormData({ text: "", videoUrl: "" })
-          setSelectedFile(null)
-          setVideoPreview(null)
-          if (fileInputRef.current) {
-            fileInputRef.current.value = ""
-          }
-        } else {
-          toast.error(response.message)
-        }
-      } catch (error) {
-        console.error('Upload error:', error)
-        toast.error("Failed to upload video draft. Please try again.")
-      }
-    } else {
-      if (!formData.videoUrl.trim() || !formData.text.trim()) {
-        toast.error("Please enter a video URL and description")
-        return
-      }
-
-      // Basic URL validation
-      try {
-        new URL(formData.videoUrl)
-      } catch {
-        toast.error("Please enter a valid URL")
-        return
-      }
-
-      try {
-        const response = await uploadVideoDraftFromUrl(formData.videoUrl, formData.text)
-
-        if (response.success) {
-          toast.success(response.message)
-          toast.info("Check your TikTok app to complete the post!")
-          // Reset form
-          setFormData({ text: "", videoUrl: "" })
-        } else {
-          toast.error(response.message)
-        }
-      } catch (error) {
-        console.error('Upload error:', error)
-        toast.error("Failed to upload video draft. Please try again.")
-      }
-    }
+    toast.info("Uploads are disabled in this build")
   }
 
   return (
@@ -359,7 +295,7 @@ export default function VideoDraftPostingPage() {
                 <div className="flex space-x-4 pt-4">
                   <Button
                     type="submit"
-                    disabled={isLoading || (activeTab === 'file' ? !selectedFile : !formData.videoUrl.trim()) || !formData.text.trim()}
+                    disabled
                     className="flex-1 bg-linear-to-r from-[#FF6B6B] to-[#4ECDC4] hover:from-[#FF5555] hover:to-[#3EC7C4] text-white font-semibold py-3 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#FF6B6B]/30"
                   >
                     {isLoading ? (

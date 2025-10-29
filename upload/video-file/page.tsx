@@ -24,7 +24,6 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useState, useRef } from "react"
-import { useTikTokPost } from "@/hooks"
 import { toast } from "sonner"
 
 export default function VideoFileUploadPage() {
@@ -39,18 +38,11 @@ export default function VideoFileUploadPage() {
   const [uploadResponse, setUploadResponse] = useState<any>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const {
-    isLoading,
-    error,
-    uploadProgress,
-    publishId,
-    uploadStatus,
-    lastResponse,
-    uploadVideoDirect,
-    uploadVideoFromUrl,
-    clearError,
-    resetState
-  } = useTikTokPost()
+  // Functionality removed: keep UI only
+  const isLoading = false
+  const error: string | null = null
+  const uploadProgress = 0
+  const lastResponse: any = null
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -65,7 +57,7 @@ export default function VideoFileUploadPage() {
       setSelectedFile(file)
       const url = URL.createObjectURL(file)
       setVideoPreview(url)
-      clearError()
+      
     }
   }
 
@@ -76,7 +68,7 @@ export default function VideoFileUploadPage() {
       setSelectedFile(file)
       const url = URL.createObjectURL(file)
       setVideoPreview(url)
-      clearError()
+      
     }
   }
 
@@ -84,84 +76,9 @@ export default function VideoFileUploadPage() {
     e.preventDefault()
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
-    // Console log on click
-    console.log("Upload Video button clicked")
-    console.log("Form data:", { 
-      text: formData.text, 
-      videoUrl: formData.videoUrl,
-      activeTab,
-      selectedFile: selectedFile?.name 
-    })
-    
-    if (activeTab === 'file') {
-      if (!selectedFile || !formData.text.trim()) {
-        toast.error("Please select a video file and enter a description")
-        return
-      }
-
-      try {
-        console.log("Uploading video file:", selectedFile.name)
-        const response = await uploadVideoDirect(selectedFile, formData.text)
-        
-        console.log("Upload response:", response)
-
-        if (response.success) {
-          // Store response and show success dialog
-          setUploadResponse(response)
-          setShowSuccessDialog(true)
-          toast.success(response.message)
-          // Reset form
-          setFormData({ text: "", videoUrl: "" })
-          setSelectedFile(null)
-          setVideoPreview(null)
-          if (fileInputRef.current) {
-            fileInputRef.current.value = ""
-          }
-        } else {
-          toast.error(response.message)
-        }
-      } catch (error) {
-        console.error('Upload error:', error)
-        toast.error("Failed to upload video. Please try again.")
-      }
-    } else {
-      if (!formData.videoUrl.trim() || !formData.text.trim()) {
-        toast.error("Please enter a video URL and description")
-        return
-      }
-
-      // Basic URL validation
-      try {
-        new URL(formData.videoUrl)
-      } catch {
-        toast.error("Please enter a valid URL")
-        return
-      }
-
-      try {
-        console.log("Uploading video from URL:", formData.videoUrl)
-        const response = await uploadVideoFromUrl(formData.videoUrl, formData.text)
-        
-        console.log("Upload response:", response)
-
-        if (response.success) {
-          // Store response and show success dialog
-          setUploadResponse(response)
-          setShowSuccessDialog(true)
-          toast.success(response.message)
-          // Reset form
-          setFormData({ text: "", videoUrl: "" })
-        } else {
-          toast.error(response.message)
-        }
-      } catch (error) {
-        console.error('Upload error:', error)
-        toast.error("Failed to upload video. Please try again.")
-      }
-    }
+    toast.info("Uploads are disabled in this build")
   }
 
   return (
@@ -368,7 +285,7 @@ export default function VideoFileUploadPage() {
                 <div className="flex space-x-4 pt-4">
                   <Button
                     type="submit"
-                    disabled={isLoading || (activeTab === 'file' ? !selectedFile : !formData.videoUrl.trim()) || !formData.text.trim()}
+                    disabled
                     className="flex-1 bg-linear-to-r from-[#00F5FF] to-[#6C63FF] hover:from-[#00E5E5] hover:to-[#5A52E6] text-white font-semibold py-3 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#00F5FF]/30 cursor-pointer"
                   >
                     {isLoading ? (

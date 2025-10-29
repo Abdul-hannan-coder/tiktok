@@ -21,7 +21,6 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useState, useRef } from "react"
-import { useTikTokPost } from "@/hooks"
 import { toast } from "sonner"
 
 export default function ImageTextPostPage() {
@@ -31,17 +30,11 @@ export default function ImageTextPostPage() {
     imageUrl: ""
   })
 
-  const {
-    isLoading,
-    error,
-    uploadProgress,
-    publishId,
-    uploadStatus,
-    lastResponse,
-    uploadPhotoDraft,
-    clearError,
-    resetState
-  } = useTikTokPost()
+  // Functionality removed: keep UI only
+  const isLoading = false
+  const error: string | null = null
+  const uploadProgress = 0
+  const lastResponse: any = null
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -50,44 +43,9 @@ export default function ImageTextPostPage() {
     })
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!formData.imageUrl.trim() || !formData.title.trim() || !formData.description.trim()) {
-      toast.error("Please enter an image URL, title, and description")
-      return
-    }
-
-    // Basic URL validation
-    try {
-      new URL(formData.imageUrl)
-    } catch {
-      toast.error("Please enter a valid URL")
-      return
-    }
-
-    try {
-      const request = {
-        photo_urls: [formData.imageUrl],
-        cover_index: 0,
-        title: formData.title,
-        description: formData.description
-      }
-
-      const response = await uploadPhotoDraft(request)
-
-      if (response.success) {
-        toast.success(response.message)
-          toast.info("Check your TikTok app to complete the post!")
-        // Reset form
-        setFormData({ title: "", description: "", imageUrl: "" })
-      } else {
-        toast.error(response.message)
-      }
-    } catch (error) {
-      console.error('Upload error:', error)
-      toast.error("Failed to upload image. Please try again.")
-    }
+    toast.info("Uploads are disabled in this build")
   }
 
   return (
@@ -262,7 +220,7 @@ export default function ImageTextPostPage() {
                 <div className="flex space-x-4 pt-4">
                   <Button
                     type="submit"
-                    disabled={isLoading || !formData.imageUrl.trim() || !formData.title.trim() || !formData.description.trim()}
+                    disabled
                     className="flex-1 bg-linear-to-r from-[#6C63FF] to-[#FF2E97] hover:from-[#5A52E6] hover:to-[#E61E87] text-white font-semibold py-3 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#6C63FF]/30"
                   >
                     {isLoading ? (
